@@ -12,6 +12,7 @@ dependencies:
   firebase_core: ^2.15.0
   flutter:
     sdk: flutter
+  lottie: ^2.5.0
 
 dev_dependencies:
   flutter_test:
