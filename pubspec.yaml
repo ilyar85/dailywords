@@ -36,6 +36,11 @@ flutter:
     - assets/settings.png
     - assets/animations/DW_logo.json
     - assets/animations/eye_lottie.json
+    - assets/globe.png
+    - assets/down.png
+    - assets/Apple.png
+    - assets/Facebook.png
+    - assets/Google.png
 
   fonts:
     - family: 'K_GothamPro'

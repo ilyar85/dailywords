@@ -5,6 +5,8 @@ import 'services/initialization_service.dart';
 import 'splash_screen.dart';
 import 'home_screen.dart';
 import 'start_screen.dart';
+import 'registration_screen.dart';
+import 'login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +36,8 @@ class _MainAppState extends State<MainApp> {
       routes: {
         '/splash': (context) => SplashScreen(initializationService: widget.initializationService),
         '/start': (context) => StartScreen(),
+        '/register': (context) => RegistrationScreen(), // предполагаемое имя для экрана регистрации
+        '/login': (context) => LoginScreen(), // предполагаемое имя для экрана входа
         // TODO: Добавьте другие маршруты здесь
       },
       home: FutureBuilder(
