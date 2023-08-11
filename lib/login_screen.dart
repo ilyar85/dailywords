@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
+import 'services/initialization_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
+  
+  final InitializationService initializationService;
+
+  const LoginScreen({Key? key, required this.initializationService}) : super(key: key);
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -8,6 +15,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool _isPasswordVisible = false;
   bool _rememberMe = true;
+
+  String _email = '';
+  String _password = '';
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +43,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     children: [
                       Text('вход', style: TextStyle(fontSize: 24)),
                       TextField(
+                        onChanged: (value) {
+                          setState(() {
+                            _email = value;
+                          });
+                        },
                         style: TextStyle(color: Color(0xFF6F6F6F)),
                         decoration: InputDecoration(
                           labelText: 'Email',
@@ -43,6 +58,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       TextField(
+                        onChanged: (value) {
+                          setState(() {
+                            _password = value;
+                          });
+                        },
                         obscureText: !_isPasswordVisible,
                         style: TextStyle(color: Color(0xFF6F6F6F)),
                         decoration: InputDecoration(
@@ -75,7 +95,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             },
                             child: const Text(
                               'забыл пароль?',
-                              style: TextStyle(fontWeight: FontWeight.normal, color: Color(0xFF6F6F6F)),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  color: Color(0xFF6F6F6F)),
                             ),
                           ),
                           Row(
@@ -83,7 +105,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               Checkbox(
                                 onChanged: (bool? value) {
                                   setState(() {
-                                    _rememberMe = value!; // Обновите значение _rememberMe
+                                    _rememberMe =
+                                        value!; // Обновите значение _rememberMe
                                   });
                                 },
                                 value: _rememberMe,
@@ -91,7 +114,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const Text(
                                 'запомнить меня',
-                                style: TextStyle(fontWeight: FontWeight.normal, color: Color(0xFF6F6F6F)),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Color(0xFF6F6F6F)),
                               ),
                             ],
                           ),
@@ -99,11 +124,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton(
+                          onPressed: () async {
+                            User? user = await widget.initializationService
+                                .loginUser(_email, _password);
+                            if (user != null) {
+                              // Пользователь успешно авторизовался
+                              Navigator.pushReplacementNamed(context,
+                                  '/home'); // или любой другой маршрут для авторизованных пользователей
+                            } else {
+                              // Ошибка авторизации (можно показать ошибку пользователю)
+                            }
+                          },
                           style: ButtonStyle(
-                            minimumSize: MaterialStateProperty.all(
-                                const Size(250.0, 33.0)), // задаём минимальный размер
+                            minimumSize: MaterialStateProperty.all(const Size(
+                                250.0, 33.0)), // задаём минимальный размер
                           ),
-                          onPressed: () {},
                           child: const Text('войти')),
                     ],
                   ),

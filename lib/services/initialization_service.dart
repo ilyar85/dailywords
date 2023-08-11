@@ -27,22 +27,38 @@ class InitializationService {
 
     if (isUserLoggedIn) {
       // Load user data from Firestore
-      DocumentSnapshot userData = await _db.collection('users').doc(currentUser!.uid).get();
+      DocumentSnapshot userData =
+          await _db.collection('users').doc(currentUser!.uid).get();
 
       isUserRegistered = userData.exists;
       if (isUserRegistered) {
         languageSelected = userData.get('language');
         studyPlan = userData.get('studyPlan');
         wordsCountForStudy = userData.get('wordsCountForStudy');
-        selectedCategories = List<String>.from(userData.get('selectedCategories'));
+        selectedCategories =
+            List<String>.from(userData.get('selectedCategories'));
         userPoints = userData.get('points');
         learnedWords = List<String>.from(userData.get('learnedWords'));
         wordsInErrors = List<String>.from(userData.get('wordsInErrors'));
         canStartNewLesson = userData.get('canStartNewLesson');
         soundsEnabled = userData.get('soundsEnabled');
         notificationsEnabled = userData.get('notificationsEnabled');
-        lastLessonCompletionTime = (userData.get('lastLessonCompletionTime') as Timestamp).toDate();
+        lastLessonCompletionTime =
+            (userData.get('lastLessonCompletionTime') as Timestamp).toDate();
       }
+    }
+  }
+
+  Future<User?> loginUser(String email, String password) async {
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      return userCredential.user;
+    } catch (e) {
+      print(e);
+      return null;
     }
   }
 }

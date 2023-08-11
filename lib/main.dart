@@ -37,7 +37,7 @@ class _MainAppState extends State<MainApp> {
         '/splash': (context) => SplashScreen(initializationService: widget.initializationService),
         '/start': (context) => StartScreen(),
         '/register': (context) => RegistrationScreen(), // предполагаемое имя для экрана регистрации
-        '/login': (context) => LoginScreen(), // предполагаемое имя для экрана входа
+        '/login': (context) => LoginScreen(initializationService: widget.initializationService), // предполагаемое имя для экрана входа
         // TODO: Добавьте другие маршруты здесь
       },
       home: FutureBuilder(
