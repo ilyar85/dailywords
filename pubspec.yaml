@@ -12,7 +12,10 @@ dependencies:
   firebase_core: ^2.15.0
   flutter:
     sdk: flutter
+  flutter_facebook_auth: ^6.0.1
+  google_sign_in: ^6.1.4
   lottie: ^2.5.0
+  sign_in_with_apple: ^5.0.0
 
 dev_dependencies:
   flutter_test:

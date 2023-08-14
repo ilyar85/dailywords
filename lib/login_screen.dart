@@ -3,10 +3,10 @@ import 'services/initialization_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
-  
   final InitializationService initializationService;
 
-  const LoginScreen({Key? key, required this.initializationService}) : super(key: key);
+  const LoginScreen({Key? key, required this.initializationService})
+      : super(key: key);
 
   @override
   _LoginScreenState createState() => _LoginScreenState();
@@ -125,14 +125,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 20),
                       ElevatedButton(
                           onPressed: () async {
-                            User? user = await widget.initializationService
-                                .loginUser(_email, _password);
-                            if (user != null) {
-                              // Пользователь успешно авторизовался
-                              Navigator.pushReplacementNamed(context,
-                                  '/home'); // или любой другой маршрут для авторизованных пользователей
-                            } else {
-                              // Ошибка авторизации (можно показать ошибку пользователю)
+                            try {
+                              User? user = await widget.initializationService
+                                  .loginUser(_email, _password);
+                              if (user != null) {
+                                // Пользователь успешно авторизовался
+                                Navigator.pushReplacementNamed(context,
+                                    '/home'); // или любой другой маршрут для авторизованных пользователей
+                              } else {
+                                // Ошибка авторизации (можно показать ошибку пользователю)
+                              }
+                            } catch (error) {
+                              handleLoginError(error);
                             }
                           },
                           style: ButtonStyle(
@@ -159,14 +163,107 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildSocialButton(String iconPath, String text) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: () {},
-        icon: Image.asset(iconPath,
-            height: 20.0), // you can adjust the size as needed
-        label: Text(text),
+    if (text == 'Продолжить с Google') {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () async {
+            try {
+              User? user =
+                  await widget.initializationService.signInWithGoogle();
+              if (user != null) {
+                Navigator.pushReplacementNamed(context, '/home');
+              } else {
+                // Показать сообщение об ошибке
+              }
+            } catch (error) {
+              handleLoginError(error);
+            }
+          },
+          icon: Image.asset(iconPath, height: 20.0),
+          label: Text(text),
+        ),
+      );
+    } else if (text == 'Продолжить с Facebook') {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () async {
+            try {
+              User? user =
+                  await widget.initializationService.signInWithFacebook();
+              if (user != null) {
+                Navigator.pushReplacementNamed(context, '/home');
+              } else {
+                // Показать сообщение об ошибке
+              }
+            } catch (error) {
+              handleLoginError(error);
+            }
+          },
+          icon: Image.asset(iconPath, height: 20.0),
+          label: Text(text),
+        ),
+      );
+    } else if (text == 'Продолжить с Apple') {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () async {
+            try {
+              User? user = await widget.initializationService.signInWithApple();
+              if (user != null) {
+                Navigator.pushReplacementNamed(context, '/home');
+              } else {
+                // Показать сообщение об ошибке
+              }
+            } catch (error) {
+              handleLoginError(error);
+            }
+          },
+          icon: Image.asset(iconPath, height: 20.0),
+          label: Text(text),
+        ),
+      );
+    }
+    return SizedBox.shrink();
+  }
+
+  void _showErrorDialog(String title, String content) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(content),
+        actions: <Widget>[
+          TextButton(
+            child: Text('Ok'),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+            },
+          )
+        ],
       ),
     );
+  }
+
+  void handleLoginError(dynamic error) {
+    String title = 'Ошибка';
+    String message = 'Что-то пошло не так. Пожалуйста, попробуйте снова позже.';
+
+    switch (error.code) {
+      case 'user-not-found':
+        message = 'Пользователь с таким email не найден.';
+        break;
+      case 'wrong-password':
+        message = 'Неверный пароль.';
+        break;
+      case 'invalid-email':
+        message = 'Неправильно отформатированный email.';
+        break;
+      // Можно добавить больше ошибок, если потребуется
+    }
+
+    _showErrorDialog(title, message);
   }
 }
