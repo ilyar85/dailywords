@@ -22,7 +22,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         if (widget.initializationService.isUserLoggedIn) {
-          Navigator.pushReplacementNamed(context, '/home'); // или любой другой маршрут для авторизованных пользователей
+          Navigator.pushReplacementNamed(context, '/plans'); // или любой другой маршрут для авторизованных пользователей
         } else {
           Navigator.pushReplacementNamed(context, '/start');
         }

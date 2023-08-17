@@ -7,6 +7,9 @@ import 'home_screen.dart';
 import 'start_screen.dart';
 import 'registration_screen.dart';
 import 'login_screen.dart';
+import 'plans_screen.dart';
+import 'packs_screen.dart';
+import 'categories_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,9 +41,13 @@ class _MainAppState extends State<MainApp> {
         '/start': (context) => StartScreen(),
         '/register': (context) => RegistrationScreen(initializationService: widget.initializationService), // предполагаемое имя для экрана регистрации
         '/login': (context) => LoginScreen(initializationService: widget.initializationService), // предполагаемое имя для экрана входа
+        '/home': (context) => HomeScreen(), // предполагаемое имя для экрана home
+        '/plans':(context) => PlansScreen(),
+        '/packs':(content) => PacksScreen(),
+        '/categories':(content) => CategoriesScreen(),
         // TODO: Добавьте другие маршруты здесь
       },
-      home: FutureBuilder(
+      home: FutureBuilder( 
         future: widget.initializationService.initialize(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {

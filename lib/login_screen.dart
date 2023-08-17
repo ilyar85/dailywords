@@ -130,8 +130,15 @@ class _LoginScreenState extends State<LoginScreen> {
                                   .loginUser(_email, _password);
                               if (user != null) {
                                 // Пользователь успешно авторизовался
+                                if (_rememberMe) {
+                                  await widget.initializationService
+                                      .setRememberedUser(user.uid);
+                                } else {
+                                  await widget.initializationService
+                                      .removeRememberedUser();
+                                }
                                 Navigator.pushReplacementNamed(context,
-                                    '/home'); // или любой другой маршрут для авторизованных пользователей
+                                    '/plans'); // или любой другой маршрут для авторизованных пользователей
                               } else {
                                 // Ошибка авторизации (можно показать ошибку пользователю)
                               }

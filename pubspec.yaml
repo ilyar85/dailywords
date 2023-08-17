@@ -15,6 +15,7 @@ dependencies:
   flutter_facebook_auth: ^6.0.1
   google_sign_in: ^6.1.4
   lottie: ^2.5.0
+  shared_preferences: ^2.2.0
   sign_in_with_apple: ^5.0.0
 
 dev_dependencies:
