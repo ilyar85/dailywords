@@ -178,4 +178,12 @@ class InitializationService {
       });
     }
   }
+
+  Future<void> saveUserCategories(List<String> categories) async {
+    if (isUserLoggedIn && isUserRegistered) {
+      await _db.collection('users').doc(currentUser!.uid).update({
+        'selectedCategories': categories,
+      });
+    }
+  }
 }
