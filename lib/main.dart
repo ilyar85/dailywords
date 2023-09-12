@@ -14,8 +14,11 @@ import 'categories_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-
   final initializationService = InitializationService();
+
+  // Добавьте эту строку, чтобы сбросить все данные. Когда это не требуется, просто закомментируйте ее.
+  //await initializationService.resetAllUserData();
+
   runApp(MainApp(initializationService: initializationService));
 }
 
@@ -41,7 +44,7 @@ class _MainAppState extends State<MainApp> {
         '/start': (context) => StartScreen(),
         '/register': (context) => RegistrationScreen(initializationService: widget.initializationService), // предполагаемое имя для экрана регистрации
         '/login': (context) => LoginScreen(initializationService: widget.initializationService), // предполагаемое имя для экрана входа
-        '/home': (context) => HomeScreen(), // предполагаемое имя для экрана home
+        '/home': (context) => HomeScreen(initializationService: widget.initializationService), // предполагаемое имя для экрана home
         '/plans':(context) => PlansScreen(),
         '/packs':(content) => PacksScreen(),
         '/categories':(content) => CategoriesScreen(),
@@ -56,7 +59,7 @@ class _MainAppState extends State<MainApp> {
           if (snapshot.connectionState == ConnectionState.done) {
             if (widget.initializationService.isUserLoggedIn) {
               // TODO: Возвращаем домашний экран для авторизованных пользователей
-              return HomeScreen();
+              return HomeScreen(initializationService: widget.initializationService);
             } else {
               return StartScreen();
             }

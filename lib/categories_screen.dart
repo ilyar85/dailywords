@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'services/initialization_service.dart';
 
 class CategoriesScreen extends StatefulWidget {
+  final InitializationService initializationService;
+  CategoriesScreen({required this.initializationService});
+
   @override
   _CategoriesScreenState createState() => _CategoriesScreenState();
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
-  final InitializationService _initializationService = InitializationService();
+  InitializationService get _initializationService => widget.initializationService;
+
   List<String> selectedCategories = [];
 
   @override
