@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'services/initialization_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 
 class RegistrationScreen extends StatefulWidget {
-  final InitializationService initializationService;
-
-  const RegistrationScreen({Key? key, required this.initializationService})
-      : super(key: key);
-
   @override
   _RegistrationScreenState createState() => _RegistrationScreenState();
 }
@@ -22,6 +18,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Получаем экземпляр InitializationService через Provider
+    final initializationService = Provider.of<InitializationService>(context);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -128,7 +127,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           if (_password == _confirmPassword) {
                             // проверка совпадения паролей
                             try {
-                              User? user = await widget.initializationService
+                              User? user = await initializationService
                                   .registerUser(_email, _password);
                               if (user != null) {
                                 Navigator.pushReplacementNamed(
@@ -169,14 +168,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Widget _buildSocialButton(String iconPath, String text) {
+    // Получаем экземпляр InitializationService через Provider
+    final initializationService = Provider.of<InitializationService>(context);
+
     if (text == 'Продолжить с Google') {
       return SizedBox(
         width: double.infinity,
         child: ElevatedButton.icon(
           onPressed: () async {
             try {
-              User? user =
-                  await widget.initializationService.signInWithGoogle();
+              User? user = await initializationService.signInWithGoogle();
               if (user != null) {
                 Navigator.pushReplacementNamed(context, '/home');
               } else {
@@ -196,8 +197,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         child: ElevatedButton.icon(
           onPressed: () async {
             try {
-              User? user =
-                  await widget.initializationService.signInWithFacebook();
+              User? user = await initializationService.signInWithFacebook();
               if (user != null) {
                 Navigator.pushReplacementNamed(context, '/home');
               } else {
@@ -217,7 +217,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         child: ElevatedButton.icon(
           onPressed: () async {
             try {
-              User? user = await widget.initializationService.signInWithApple();
+              User? user = await initializationService.signInWithApple();
               if (user != null) {
                 Navigator.pushReplacementNamed(context, '/home');
               } else {

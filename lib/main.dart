@@ -10,61 +10,52 @@ import 'login_screen.dart';
 import 'plans_screen.dart';
 import 'packs_screen.dart';
 import 'categories_screen.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  final initializationService = InitializationService();
 
-  // Добавьте эту строку, чтобы сбросить все данные. Когда это не требуется, просто закомментируйте ее.
-  //await initializationService.resetAllUserData();
-
-  runApp(MainApp(initializationService: initializationService));
+  runApp(
+    Provider<InitializationService>(
+      create: (context) => InitializationService(),
+      child: MainApp(),
+    ),
+  );
 }
 
-class MainApp extends StatefulWidget {
-  final InitializationService initializationService;
-
-  MainApp({required this.initializationService});
-
-  @override
-  _MainAppState createState() => _MainAppState();
-}
-
-class _MainAppState extends State<MainApp> {
-  final InitializationService _initializationService = InitializationService();
-
+class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final initializationService = Provider.of<InitializationService>(context, listen: false);
+
     return MaterialApp(
       theme: appTheme,
       initialRoute: '/splash',
       routes: {
-        '/splash': (context) => SplashScreen(initializationService: widget.initializationService),
+        '/splash': (context) => SplashScreen(),
         '/start': (context) => StartScreen(),
-        '/register': (context) => RegistrationScreen(initializationService: widget.initializationService), // предполагаемое имя для экрана регистрации
-        '/login': (context) => LoginScreen(initializationService: widget.initializationService), // предполагаемое имя для экрана входа
-        '/home': (context) => HomeScreen(initializationService: widget.initializationService), // предполагаемое имя для экрана home
+        '/register': (context) => RegistrationScreen(),
+        '/login': (context) => LoginScreen(),
+        '/home': (context) => HomeScreen(),
         '/plans':(context) => PlansScreen(),
         '/packs':(content) => PacksScreen(),
         '/categories':(content) => CategoriesScreen(),
-        // TODO: Добавьте другие маршруты здесь
       },
       home: FutureBuilder( 
-        future: widget.initializationService.initialize(),
+        future: initializationService.initialize(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Scaffold(body: Center(child: Text('Ошибка инициализации')));
           }
           if (snapshot.connectionState == ConnectionState.done) {
-            if (widget.initializationService.isUserLoggedIn) {
-              // TODO: Возвращаем домашний экран для авторизованных пользователей
-              return HomeScreen(initializationService: widget.initializationService);
+            if (initializationService.isUserLoggedIn) {
+              return HomeScreen();
             } else {
               return StartScreen();
             }
           }
-          return SplashScreen(initializationService: widget.initializationService);
+          return SplashScreen();
         },
       ),
     );

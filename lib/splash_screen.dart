@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'services/initialization_service.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
-  final InitializationService initializationService;
-
-  const SplashScreen({Key? key, required this.initializationService}) : super(key: key);
-
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -19,9 +16,11 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     super.initState();
 
     _controller = AnimationController(vsync: this);
-    _controller.addStatusListener((status) {
+    _controller.addStatusListener((status) async {
       if (status == AnimationStatus.completed) {
-        if (widget.initializationService.isUserLoggedIn) {
+        final initializationService = Provider.of<InitializationService>(context, listen: false);
+        await initializationService.initialize();
+        if (initializationService.isUserLoggedIn) {
           Navigator.pushReplacementNamed(context, '/plans'); // или любой другой маршрут для авторизованных пользователей
         } else {
           Navigator.pushReplacementNamed(context, '/start');

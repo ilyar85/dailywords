@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'learning_screen.dart';
 import 'services/initialization_service.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
-  final InitializationService initializationService;
-  HomeScreen({required this.initializationService});
-
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
@@ -18,8 +16,13 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Получаем экземпляр InitializationService через Provider
+    final initializationService =
+        Provider.of<InitializationService>(context, listen: false);
+
     _tabs = [
-      LearningScreen(initializationService: widget.initializationService),
+      LearningScreen(),
       Center(child: Text("Статистика")),
       Center(child: Text("Аккаунт")),
     ];
@@ -64,4 +67,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-

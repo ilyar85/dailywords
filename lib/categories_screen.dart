@@ -1,22 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'services/initialization_service.dart';
+import 'package:provider/provider.dart';
 
 class CategoriesScreen extends StatefulWidget {
-  final InitializationService initializationService;
-  CategoriesScreen({required this.initializationService});
-
   @override
   _CategoriesScreenState createState() => _CategoriesScreenState();
 }
 
 class _CategoriesScreenState extends State<CategoriesScreen> {
-  InitializationService get _initializationService => widget.initializationService;
 
   List<String> selectedCategories = [];
 
   @override
   Widget build(BuildContext context) {
+    // Получаем экземпляр InitializationService через Provider
+    final initializationService = Provider.of<InitializationService>(context);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -121,7 +121,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   onPressed: () async {
                     if (selectedCategories.length == 4) {
                       // TODO: Сохраните выбранные категории для пользователя в Firestore
-                      await _initializationService.saveUserCategories(selectedCategories);
+                      await initializationService.saveUserCategories(selectedCategories);
 
                       // TODO: Переход на следующий экран
                       Navigator.pushNamed(context, '/home');

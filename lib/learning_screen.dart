@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'services/initialization_service.dart';
 import 'themes/app_theme.dart';
 import 'lesson_screen.dart';
+import 'package:provider/provider.dart';
+
 
 class LearningScreen extends StatefulWidget {
-  final InitializationService initializationService;
-
-  LearningScreen({required this.initializationService});
-
+  
   @override
   _LearningScreenState createState() => _LearningScreenState();
 }
@@ -24,15 +23,17 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 
   Future<void> _checkLessonAvailability() async {
+    final initializationService = Provider.of<InitializationService>(context, listen: false);
+    
     // ... оставшийся код проверки
-    isFirstLesson = widget.initializationService.learnedWords == null ||
-        widget.initializationService.learnedWords!.isEmpty;
+    isFirstLesson = initializationService.learnedWords == null ||
+        initializationService.learnedWords!.isEmpty;
     if (isFirstLesson) {
       canStartLesson = true;
-    } else if (widget.initializationService.lastLessonCompletionTime != null &&
+    } else if (initializationService.lastLessonCompletionTime != null &&
         DateTime.now()
                 .difference(
-                    widget.initializationService.lastLessonCompletionTime!)
+                    initializationService.lastLessonCompletionTime!)
                 .inHours <
             24) {
       canStartLesson = false;
@@ -49,9 +50,9 @@ class _LearningScreenState extends State<LearningScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: _getCurrentLayout(),
+    return SafeArea(
+      //backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      child: _getCurrentLayout(),
     );
   }
 
@@ -104,12 +105,13 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 
   Widget _repeatLessonLayout() {
+    final initializationService = Provider.of<InitializationService>(context, listen: false);
     print('::::_repeatLessonLayout');
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text("Ты молодец", style: Theme.of(context).textTheme.bodyLarge),
-        Text("${widget.initializationService.userPoints}/10",
+        Text("${initializationService.userPoints}/10",
             style: Theme.of(context).textTheme.bodyMedium),
         // TODO: добавьте ваш логотип или другую картинку
         Text("Увидимся через", style: Theme.of(context).textTheme.bodyMedium),
@@ -145,7 +147,7 @@ void _startTest() {
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => LessonScreen(initializationService: widget.initializationService),
+      builder: (context) => LessonScreen(),
     ),
   );
 }

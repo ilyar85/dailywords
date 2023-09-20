@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/initialization_service.dart';
+import 'package:provider/provider.dart';
 
 class PacksScreen extends StatefulWidget {
   @override
@@ -11,6 +12,7 @@ class _PacksScreenState extends State<PacksScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final initializationService = Provider.of<InitializationService>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -58,8 +60,7 @@ class _PacksScreenState extends State<PacksScreen> {
                   onPressed: () async {
                     if (selectedWordsCount != null) {
                       // Обновление значения wordsCountForStudy в InitializationService
-                      await InitializationService()
-                          .setWordsCountForStudy(selectedWordsCount!);
+                      await initializationService.setWordsCountForStudy(selectedWordsCount!);
                       Navigator.pushNamed(context, '/categories');
                     } else {
                       // TODO: Показать пользователю предупреждение

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -19,9 +20,9 @@ class WordOption {
   final String rus;
   final String transcription;
 
-  WordOption({required this.word, required this.rus, required this.transcription});
+  WordOption(
+      {required this.word, required this.rus, required this.transcription});
 }
-
 
 class InitializationService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -78,11 +79,11 @@ class InitializationService {
 
   Future<User?> loginUser(String email, String password) async {
     //try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      return userCredential.user;
+    UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    return userCredential.user;
     //} catch (e) {
     //  print("Error during login: $e");
     //  return null;
@@ -222,6 +223,7 @@ class InitializationService {
           {'selectedCategories': categories},
           SetOptions(merge: true),
         );
+        selectedCategories = categories;
         print(
             'User categories updated successfully for user ${currentUser!.uid}');
       } else {
@@ -253,67 +255,88 @@ class InitializationService {
     }
   }
 
-Future<List<Word>> getRandomWordsForLesson() async {
-  List<Word> selectedWords = [];
-  Set<int> randomIndexes = {};
+  Future<List<Word>> getRandomWordsForLesson() async {
+    List<Word> selectedWords = [];
+    Set<int> randomIndexes = {};
 
-  for (String category in selectedCategories!) {
-    CollectionReference wordsRef = _db.collection('categories').doc(category).collection('words');
+    for (String category in selectedCategories!) {
+      CollectionReference wordsRef =
+          _db.collection('categories').doc(category).collection('words');
 
-    int wordsCount = (await wordsRef.get()).size;
+      int wordsCount = (await wordsRef.get()).size;
 
-    while (randomIndexes.length < wordsCountForStudy!) {
-      int randIndex = Random().nextInt(wordsCount);
-      if (!randomIndexes.contains(randIndex)) {
-        randomIndexes.add(randIndex);
+      while (randomIndexes.length < wordsCountForStudy!) {
+        int randIndex = Random().nextInt(wordsCount);
+        if (!randomIndexes.contains(randIndex)) {
+          randomIndexes.add(randIndex);
+        }
+      }
+
+      for (int index in randomIndexes) {
+        DocumentSnapshot wordDoc = (await wordsRef.get()).docs[index];
+        Word word = Word(
+          word: wordDoc['word'],
+          rus: wordDoc['rus'],
+          transcription: wordDoc['transcription'],
+        );
+        selectedWords.add(word);
       }
     }
 
-    for (int index in randomIndexes) {
-      DocumentSnapshot wordDoc = (await wordsRef.get()).docs[index];
-      Word word = Word(
-        word: wordDoc['word'],
-        rus: wordDoc['rus'],
-        transcription: wordDoc['transcription'],
+    return selectedWords;
+  }
+
+  Future<List<WordOption>> getWordOptionsFor(
+      Word correctWord, String category) async {
+    List<WordOption> options = [];
+
+    // Получаем все слова из категории
+    CollectionReference wordsRef =
+        _db.collection('categories').doc(category).collection('words');
+    List<DocumentSnapshot> allWordsInCategory = (await wordsRef.get()).docs;
+
+    // Исключаем правильное слово из списка
+    allWordsInCategory.removeWhere((doc) => doc['word'] == correctWord.word);
+
+    // Выбираем три случайных слова
+    allWordsInCategory.shuffle();
+    for (int i = 0; i < 3; i++) {
+      WordOption wordOption = WordOption(
+        word: allWordsInCategory[i]['word'],
+        rus: allWordsInCategory[i]['rus'],
+        transcription: allWordsInCategory[i]['transcription'],
       );
-      selectedWords.add(word);
+      options.add(wordOption);
+    }
+
+    // Добавляем правильное слово в список вариантов
+    options.add(WordOption(
+      word: correctWord.word,
+      rus: correctWord.rus,
+      transcription: correctWord.transcription,
+    ));
+
+    // Перемешиваем варианты, чтобы правильный ответ был не на одном и том же месте
+    options.shuffle();
+
+    return options;
+  }
+
+  Future<String?> getImageUrlForWord(String word, String category) async {
+    final ref = FirebaseStorage.instance
+        .ref()
+        .child('words')
+        .child(category)
+        .child('$word.png');
+
+    // Выводим путь в консоль для отладки
+    print("Путь к изображению: ${ref.fullPath}");
+
+    try {
+      return await ref.getDownloadURL();
+    } catch (e) {
+      print("Ошибка при получении URL изображения: $e");
+      return null;
     }
   }
-
-  return selectedWords;
-}
-Future<List<WordOption>> getWordOptionsFor(Word correctWord, String category) async {
-  List<WordOption> options = [];
-  
-  // Получаем все слова из категории
-  CollectionReference wordsRef = _db.collection('categories').doc(category).collection('words');
-  List<DocumentSnapshot> allWordsInCategory = (await wordsRef.get()).docs;
-  
-  // Исключаем правильное слово из списка
-  allWordsInCategory.removeWhere((doc) => doc['word'] == correctWord.word);
-  
-  // Выбираем три случайных слова
-  allWordsInCategory.shuffle();
-  for (int i = 0; i < 3; i++) {
-    WordOption wordOption = WordOption(
-      word: allWordsInCategory[i]['word'],
-      rus: allWordsInCategory[i]['rus'],
-      transcription: allWordsInCategory[i]['transcription'],
-    );
-    options.add(wordOption);
-  }
-
-  // Добавляем правильное слово в список вариантов
-  options.add(WordOption(
-    word: correctWord.word,
-    rus: correctWord.rus,
-    transcription: correctWord.transcription,
-  ));
-
-  // Перемешиваем варианты, чтобы правильный ответ был не на одном и том же месте
-  options.shuffle();
-
-  return options;
-}
-
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/initialization_service.dart';
+import 'package:provider/provider.dart';
 
 class PlansScreen extends StatefulWidget {
   @override
@@ -8,10 +9,10 @@ class PlansScreen extends StatefulWidget {
 
 class _PlansScreenState extends State<PlansScreen> {
   bool _isFreeVersionSelected = true; // По умолчанию выбрана бесплатная версия
-  final _initializationService = InitializationService();
 
   @override
   Widget build(BuildContext context) {
+    final initializationService = Provider.of<InitializationService>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -142,8 +143,9 @@ class _PlansScreenState extends State<PlansScreen> {
   }
 
   void _onContinue() async {
+    final initializationService = Provider.of<InitializationService>(context, listen: false);
     String selectedPlan = _isFreeVersionSelected ? "free" : "paid";
-    await _initializationService.setStudyPlan(selectedPlan);
+    await initializationService.setStudyPlan(selectedPlan);
 
     // Отображение информационного сообщения
     final snackBar = SnackBar(

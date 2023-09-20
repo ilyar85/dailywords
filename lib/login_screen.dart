@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'services/initialization_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
-  final InitializationService initializationService;
-
-  const LoginScreen({Key? key, required this.initializationService})
-      : super(key: key);
-
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -21,6 +17,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Получаем экземпляр InitializationService через Provider
+    final initializationService = Provider.of<InitializationService>(context);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -126,15 +125,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       ElevatedButton(
                           onPressed: () async {
                             try {
-                              User? user = await widget.initializationService
+                              User? user = await initializationService
                                   .loginUser(_email, _password);
                               if (user != null) {
                                 // Пользователь успешно авторизовался
                                 if (_rememberMe) {
-                                  await widget.initializationService
+                                  await initializationService
                                       .setRememberedUser(user.uid);
                                 } else {
-                                  await widget.initializationService
+                                  await initializationService
                                       .removeRememberedUser();
                                 }
                                 Navigator.pushReplacementNamed(context,
@@ -170,14 +169,16 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildSocialButton(String iconPath, String text) {
+    // Получаем экземпляр InitializationService через Provider
+    final initializationService = Provider.of<InitializationService>(context);
+
     if (text == 'Продолжить с Google') {
       return SizedBox(
         width: double.infinity,
         child: ElevatedButton.icon(
           onPressed: () async {
             try {
-              User? user =
-                  await widget.initializationService.signInWithGoogle();
+              User? user = await initializationService.signInWithGoogle();
               if (user != null) {
                 Navigator.pushReplacementNamed(context, '/home');
               } else {
@@ -197,8 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: ElevatedButton.icon(
           onPressed: () async {
             try {
-              User? user =
-                  await widget.initializationService.signInWithFacebook();
+              User? user = await initializationService.signInWithFacebook();
               if (user != null) {
                 Navigator.pushReplacementNamed(context, '/home');
               } else {
@@ -218,7 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: ElevatedButton.icon(
           onPressed: () async {
             try {
-              User? user = await widget.initializationService.signInWithApple();
+              User? user = await initializationService.signInWithApple();
               if (user != null) {
                 Navigator.pushReplacementNamed(context, '/home');
               } else {

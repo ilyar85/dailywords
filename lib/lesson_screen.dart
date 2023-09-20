@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'services/initialization_service.dart';
+import 'package:provider/provider.dart';
 
 class LessonScreen extends StatefulWidget {
-  final InitializationService initializationService;
-
-  LessonScreen({required this.initializationService});
-
   @override
   _LessonScreenState createState() => _LessonScreenState();
 }
@@ -15,6 +12,9 @@ class _LessonScreenState extends State<LessonScreen> {
   int currentPoints = 0;
   List<Word>? lessonWords;
   List<WordOption>? currentWordOptions;
+  String? imageUrl; // Добавим это свойство для хранения URL-адреса изображения
+  Color? selectedAnswerColor;
+  WordOption? selectedAnswer;
 
   @override
   void initState() {
@@ -23,42 +23,114 @@ class _LessonScreenState extends State<LessonScreen> {
   }
 
   _initializeLesson() async {
-    lessonWords = await widget.initializationService.getRandomWordsForLesson();
-    _loadOptionsForCurrentWord();
+    final initializationService =
+        Provider.of<InitializationService>(context, listen: false);
+    lessonWords = await initializationService.getRandomWordsForLesson();
+    // Получаем URL-адрес изображения для текущего слова
+    if (lessonWords != null && lessonWords!.isNotEmpty) {
+      imageUrl = await initializationService.getImageUrlForWord(
+          lessonWords![currentWordIndex].word,
+          initializationService
+              .selectedCategories![0] // Это предполагаемая категория слова
+          );
+    }
+    _loadOptionsAndImageForCurrentWord();
   }
 
-  _loadOptionsForCurrentWord() async {
-    currentWordOptions = await widget.initializationService.getWordOptionsFor(lessonWords![currentWordIndex], widget.initializationService.selectedCategories![0]);
-    setState(() {});
+  _loadOptionsAndImageForCurrentWord() async {
+    final initializationService =
+        Provider.of<InitializationService>(context, listen: false);
+    currentWordOptions = await initializationService.getWordOptionsFor(
+        lessonWords![currentWordIndex],
+        initializationService.selectedCategories![0]);
+
+    // Добавим загрузку URL изображения для следующего слова
+    if (lessonWords != null && lessonWords!.isNotEmpty) {
+      imageUrl = await initializationService.getImageUrlForWord(
+          lessonWords![currentWordIndex].word,
+          initializationService
+              .selectedCategories![0] // Это предполагаемая категория слова
+          );
+    }
+
+    setState(() {}); // Обновить состояние, чтобы перестроить виджет
   }
 
   _handleAnswerTap(WordOption option) {
-    if (option.word == lessonWords![currentWordIndex].word) {
-      // TODO: Handle correct answer
-      setState(() {
+    setState(() {
+      selectedAnswer = option;
+      if (option.word == lessonWords![currentWordIndex].word) {
+        selectedAnswerColor = Colors.blue; // Синий цвет для правильного ответа
         currentPoints += 10;
+      } else {
+        selectedAnswerColor = null; // Не меняем цвет для неправильного ответа
+      }
+    });
+
+    Future.delayed(Duration(seconds: 1), () {
+      setState(() {
+        selectedAnswer = null; // Сбрасываем выбранный ответ
         currentWordIndex++;
+        // Здесь мы загружаем данные для следующего слова
+        _initializeLesson();
+        _loadOptionsAndImageForCurrentWord();
       });
-      _loadOptionsForCurrentWord();
-    } else {
-      // TODO: Handle wrong answer
-    }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final initializationService =
+        Provider.of<InitializationService>(context, listen: false);
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
           children: [
-            _PointsCard(points: currentPoints),
-            _ProgressCard(index: currentWordIndex + 1, total: widget.initializationService.wordsCountForStudy!),
+            Container(
+              height: 100, // Увеличено по высоте
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: _PointsCard(points: currentPoints),
+                  ),
+                  SizedBox(width: 8), // Добавлен отступ между карточками
+                  Expanded(
+                    child: _ProgressCard(
+                      index: currentWordIndex + 1,
+                      total: initializationService.wordsCountForStudy!,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 8),
+            Expanded(
+              child: Center(
+                child: imageUrl != null
+                    ? _ImageCard(
+                        imageUrl: imageUrl!,
+                        transcription:
+                            lessonWords![currentWordIndex].transcription)
+                    : SizedBox(),
+              ),
+            ),
+            SizedBox(height: 8),
+            ...currentWordOptions
+                    ?.map((option) => _AnswerCard(
+                          option: option,
+                          onTap: _handleAnswerTap,
+                          color: option == selectedAnswer
+                              ? selectedAnswerColor
+                              : null, // Устанавливаем цвет
+                        ))
+                    .toList() ??
+                [Center(child: CircularProgressIndicator())],
           ],
         ),
-        // TODO: Add Image Card for current word
-        ...currentWordOptions!.map((option) => _AnswerCard(option: option, onTap: _handleAnswerTap))
-      ],
+      ),
     );
   }
 }
@@ -71,12 +143,21 @@ class _PointsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      // TODO: Style the card
-      child: Row(
-        children: [
-          Icon(Icons.star),
-          Text("$points очков"),
-        ],
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30), // Updated to 30
+      ),
+      child: Container(
+        height: 80, // Set height
+        padding: EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.star, color: Color(0xFF6F6F6F)),
+            SizedBox(width: 8),
+            Text("$points очков", style: TextStyle(color: Color(0xFF6F6F6F))),
+          ],
+        ),
       ),
     );
   }
@@ -91,8 +172,18 @@ class _ProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      // TODO: Style the card
-      child: Text("$index/$total"),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30), // Updated to 30
+      ),
+      child: Container(
+        height: 80, // Set height
+        padding: EdgeInsets.all(10),
+        child: Center(
+          child:
+              Text("$index/$total", style: TextStyle(color: Color(0xFF6F6F6F))),
+        ),
+      ),
     );
   }
 }
@@ -100,16 +191,68 @@ class _ProgressCard extends StatelessWidget {
 class _AnswerCard extends StatelessWidget {
   final WordOption option;
   final Function onTap;
+  final Color? color; // Добавим параметр для цвета
 
-  _AnswerCard({required this.option, required this.onTap});
+  _AnswerCard({required this.option, required this.onTap, this.color});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      // TODO: Style the card
+      color: color, // Устанавливаем цвет карточки
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30),
+      ),
       child: ListTile(
-        title: Text(option.word),
+        contentPadding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+        title: Center(
+          child: Text(
+            option.rus,
+            style: TextStyle(color: Color(0xFF6F6F6F)),
+          ),
+        ),
         onTap: () => onTap(option),
+      ),
+    );
+  }
+}
+
+class _ImageCard extends StatelessWidget {
+  final String imageUrl;
+  final String transcription;
+
+  _ImageCard({required this.imageUrl, required this.transcription});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(30), // Updated to 30
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30), // Updated to 30
+        child: Container(
+          height: 300,
+          width: double.infinity,
+          //decoration: BoxDecoration(
+          //  border: Border.all(width: 2.0, color: Colors.grey), // Border added
+          //),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                height: 225, // 300 * 0.75 = 225 to reduce the size by 25%
+                width: double.infinity,
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(transcription, style: TextStyle(color: Color(0xFF6F6F6F))),
+            ],
+          ),
+        ),
       ),
     );
   }
