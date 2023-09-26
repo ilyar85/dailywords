@@ -339,4 +339,32 @@ class InitializationService {
       return null;
     }
   }
+
+
+Future<void> saveLesson(List<Word> words, List<WordOption> selectedOptions, List<int> pointsPerWord, int totalPoints) async {
+  if (currentUser == null) return;
+
+  CollectionReference lessons = _db.collection('users').doc(currentUser!.uid).collection('lessons');
+  
+  await lessons.add({
+    'words': words.asMap().entries.map((entry) {
+      int idx = entry.key;
+      Word word = entry.value;
+      return {
+        'word': word.word,
+        'transcription': word.transcription,
+        'correctOption': word.rus,  // Правильный ответ
+        'selectedOption': selectedOptions[idx].rus,  // Выбранный пользователем ответ
+        'points': pointsPerWord[idx],  // Очки за данное слово
+      };
+    }).toList(),
+    'lastLessonCompletionTime': Timestamp.now(),
+    'totalPoints': totalPoints,  // Общее количество очков за урок
+  });
+}
+
+
+
+
+
 }

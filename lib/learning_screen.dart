@@ -4,14 +4,13 @@ import 'themes/app_theme.dart';
 import 'lesson_screen.dart';
 import 'package:provider/provider.dart';
 
-
 class LearningScreen extends StatefulWidget {
-  
   @override
   _LearningScreenState createState() => _LearningScreenState();
 }
 
 class _LearningScreenState extends State<LearningScreen> {
+  bool isLessonActive = false;
   bool canStartLesson = false;
   bool canRepeatLastLesson = false;
   bool isFirstLesson = false;
@@ -23,8 +22,9 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 
   Future<void> _checkLessonAvailability() async {
-    final initializationService = Provider.of<InitializationService>(context, listen: false);
-    
+    final initializationService =
+        Provider.of<InitializationService>(context, listen: false);
+
     // ... оставшийся код проверки
     isFirstLesson = initializationService.learnedWords == null ||
         initializationService.learnedWords!.isEmpty;
@@ -32,8 +32,7 @@ class _LearningScreenState extends State<LearningScreen> {
       canStartLesson = true;
     } else if (initializationService.lastLessonCompletionTime != null &&
         DateTime.now()
-                .difference(
-                    initializationService.lastLessonCompletionTime!)
+                .difference(initializationService.lastLessonCompletionTime!)
                 .inHours <
             24) {
       canStartLesson = false;
@@ -50,10 +49,9 @@ class _LearningScreenState extends State<LearningScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      //backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      child: _getCurrentLayout(),
-    );
+    return isLessonActive
+        ? LessonScreen()
+        : SafeArea(child: _getCurrentLayout());
   }
 
   Widget _getCurrentLayout() {
@@ -105,7 +103,8 @@ class _LearningScreenState extends State<LearningScreen> {
   }
 
   Widget _repeatLessonLayout() {
-    final initializationService = Provider.of<InitializationService>(context, listen: false);
+    final initializationService =
+        Provider.of<InitializationService>(context, listen: false);
     print('::::_repeatLessonLayout');
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -143,13 +142,9 @@ class _LearningScreenState extends State<LearningScreen> {
     );
   }
 
-void _startTest() {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => LessonScreen(),
-    ),
-  );
-}
-
+  void _startTest() {
+    setState(() {
+      isLessonActive = true;
+    });
+  }
 }

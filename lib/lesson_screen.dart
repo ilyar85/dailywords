@@ -56,6 +56,17 @@ class _LessonScreenState extends State<LessonScreen> {
     setState(() {}); // Обновить состояние, чтобы перестроить виджет
   }
 
+  void _finishLesson() async {
+    final initializationService =
+        Provider.of<InitializationService>(context, listen: false);
+
+    // Здесь записываем результаты урока в базу данных
+    //await initializationService.saveLessonResults(currentPoints);
+
+    // Возвращаемся на экран LearningScreen
+    //Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LearningScreen()));
+  }
+
   _handleAnswerTap(WordOption option) {
     setState(() {
       selectedAnswer = option;
@@ -67,15 +78,20 @@ class _LessonScreenState extends State<LessonScreen> {
       }
     });
 
-    Future.delayed(Duration(seconds: 1), () {
-      setState(() {
-        selectedAnswer = null; // Сбрасываем выбранный ответ
-        currentWordIndex++;
-        // Здесь мы загружаем данные для следующего слова
-        _initializeLesson();
-        _loadOptionsAndImageForCurrentWord();
+    // Проверка на последнее слово
+    if (currentWordIndex == lessonWords!.length - 1) {
+      _finishLesson();
+    } else {
+      Future.delayed(Duration(seconds: 1), () {
+        setState(() {
+          selectedAnswer = null; // Сбрасываем выбранный ответ
+          currentWordIndex++;
+          // Здесь мы загружаем данные для следующего слова
+          _initializeLesson();
+          _loadOptionsAndImageForCurrentWord();
+        });
       });
-    });
+    }
   }
 
   @override
@@ -89,7 +105,7 @@ class _LessonScreenState extends State<LessonScreen> {
         child: Column(
           children: [
             Container(
-              height: 100, // Увеличено по высоте
+              height: 60, // Увеличено по высоте
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -148,7 +164,7 @@ class _PointsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(30), // Updated to 30
       ),
       child: Container(
-        height: 80, // Set height
+        height: 60, // Set height
         padding: EdgeInsets.all(10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -177,7 +193,7 @@ class _ProgressCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(30), // Updated to 30
       ),
       child: Container(
-        height: 80, // Set height
+        height: 60, // Set height
         padding: EdgeInsets.all(10),
         child: Center(
           child:
@@ -241,11 +257,11 @@ class _ImageCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                height: 225, // 300 * 0.75 = 225 to reduce the size by 25%
+                height: 150, // 300 * 0.75 = 225 to reduce the size by 25%
                 width: double.infinity,
                 child: Image.network(
                   imageUrl,
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                 ),
               ),
               SizedBox(height: 8),
